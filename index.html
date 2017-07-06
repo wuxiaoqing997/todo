@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div class="wapper">
+        <div class="out">
+            <div class="top">
+                <i class="fa fa-file-text fa-2x color" aria-hidden="true" id="title"></i>
+                <span>Todo-lists</span>
+                <i class="fa fa-cog fa-2x color skin" aria-hidden="true" id="set">
+                <li class="one">
+                </li>
+                <li class="two">
+                </li>
+                <li class="three">
+                </li>
+                <li class="four">
+                </li>
+                </i>
+                <i class="fa fa-plus-square fa-2x color" aria-hidden="true" id="add"></i>
+                <div class="add">
+                    <div class="add_top">
+                        <span>Insert</span>
+                        <i class="fa fa-minus minus color" aria-hidden="true" id="hide"></i>
+                    </div>
+                    <div class="add_content">
+                        <textarea autofocus="true"></textarea>
+                        <br>
+                        <a href="javascript:0"><img src="/imgs/ok.png" id="yes"></a>
+                        <a href="javascript:0" id="no"><img src="/imgs/no.png"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <ul class="timeline">
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    var log = console.log.bind(console, '*** ')
+    var e = sel => {
+        return document.querySelector(sel)
+    }
+    var toggleClass = (element, className) => {
+        if (element.classList.contains(className)) {
+            element.classList.remove(className)
+        } else {
+            element.classList.add(className)
+        }
+    }
+    var add_in = e('.add')
+    var add_click = function() {
+        var add_panel = e('#add')
+        add_panel.addEventListener('click', function() {
+            e('textarea').focus()
+            log('click')
+            toggleClass(add_in, 'show')
+        })
+    }
+    var appendHtml = (element, html) => element.insertAdjacentHTML('beforeend', html)
+
+    var ajax = (method, path, data, reseponseCallback) => {
+        var r = new XMLHttpRequest()
+            // 设置请求方法和请求地址
+        r.open(method, path, true)
+            // 设置发送的数据的格式
+        r.setRequestHeader('Content-Type', 'application/json')
+            // 注册响应函数
+        r.onreadystatechange = function() {
+                if (r.readyState === 4) {
+                    // reseponseCallback 服务器返回的信息
+                    reseponseCallback(r.response)
+                }
+            }
+            // 处理 data
+        data = JSON.stringify(data, null, 2)
+            // 发送请求
+        r.send(data)
+    }
+
+    var templateTodo = todo => {
+        var task = todo.task
+        var id = todo.id
+        var t = `
+       <li>
+                        <div class="direction-r">
+                            <div class="flag-wrapper" data-id='${id}'>
+                                <span class="flag">${task}</span>
+                                <div id="img-list">
+                                     <img src="/imgs/pen.png" class="pen">
+                                    <img src="/imgs/com.png" class="com">
+                                    <img src="/imgs/del.png" class="del">
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+    `
+
+        return t
+    }
+
+    var changeSkin = function() {
+        var total = e('#set')
+        total.addEventListener('mouseover', function() {
+            toggleClass(e('.one'), 'show')
+            toggleClass(e(".two"), 'show')
+            toggleClass(e(".three"), 'show')
+            toggleClass(e(".four"), 'show')
+        })
+
+        total.addEventListener('mouseout', function() {
+            toggleClass(e('.one'), 'show')
+            toggleClass(e(".two"), 'show')
+            toggleClass(e(".three"), 'show')
+            toggleClass(e(".four"), 'show')
+        })
+    }
+
+    var getSkin = function() {
+        var total = e('#set')
+        total.addEventListener('click', function(event) {
+            var self = event.target
+            var link = e('link')
+            var head = e('head')
+            if (self.classList.contains('one')) {
+                if (link != null) {
+                    log('remove link')
+                    link.remove()
+                }
+                var link_skin = `<link rel="stylesheet" href="/css/pink.css">
+
+                <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css">
+                `
+                appendHtml(head, link_skin)
+                log('pink')
+            } else if (self.classList.contains('two')) {
+                if (link != null) {
+                    log('remove link')
+                    link.remove()
+                }
+                var link_skin = `<link rel="stylesheet" href="/css/blue.css">
+
+                <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css">
+
+                `
+                appendHtml(head, link_skin)
+                log('blue')
+            } else if (self.classList.contains('four')) {
+                if (link != null) {
+                    log('remove link')
+                    link.remove()
+                }
+                var link_skin = `<link rel="stylesheet" href="/css/grew.css">
+
+                <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css">
+                `
+                appendHtml(head, link_skin)
+                log('grew')
+            } else {
+                if (link != null) {
+                    log('remove link')
+                    link.remove()
+                }
+                var link_skin = `<link rel="stylesheet" href="/css/style.css">
+
+                <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css">
+                `
+                appendHtml(head, link_skin)
+                log('style')
+            }
+        })
+
+    }
+
+    var insertTodo = todo => {
+        var flag_list = e('.timeline')
+        var html = templateTodo(todo)
+        log(todo)
+        appendHtml(flag_list, html)
+    }
+
+    var insertTodos = todos => {
+        log(todos.length)
+        log(typeof todos)
+        var list = JSON.parse(todos)
+        for (var i = 0; i < list.length; i++) {
+            var todo = list[i]
+            insertTodo(todo)
+        }
+    }
+
+    var apiTodoAll = callback => {
+        var method = 'GET'
+        var path = '/todo/all'
+        var data = {}
+        ajax(method, path, data, callback)
+    }
+
+    var apiTodoUpdate = (todoId, data, callback) => {
+        log(data)
+        var method = 'POST'
+        var path = '/todo/update/' + todoId
+        var data = {
+            task: data
+        }
+        log(data)
+        ajax(method, path, data, callback)
+    }
+
+    var apiTodoAdd = (task, callback) => {
+        var method = 'POST'
+        var path = '/todo/add'
+        var data = {
+            task: task
+        }
+        ajax(method, path, data, callback)
+    }
+
+    var apiTodoDelete = (id, callback) => {
+        var method = 'GET'
+        var path = '/todo/delete/' + id
+        var data = {}
+        ajax(method, path, data, callback)
+    }
+
+    var InsertDate = function() {
+        var yes = e('#yes')
+        var no = e('#no')
+        yes.addEventListener('click', function() {
+            var insert = e('textarea').value
+            log(insert.length)
+            if (insert.length == 0) {
+                alert("please enter!")
+                e('textarea').focus()
+            } else {
+                toggleClass(add_in, 'show')
+                apiTodoAdd(insert, function(insert) {
+                    log(insert)
+                })
+                e('textarea').value = ' '
+                e('textarea').focus()
+                apiTodoAll(function(data) {
+                    log(data)
+                    var list = JSON.parse(data)
+                    var len = list.length
+                    insertTodo(list[len - 1])
+                })
+            }
+        })
+        no.addEventListener('click', function() {
+            e('textarea').value = ' '
+            e('textarea').focus()
+        })
+    }
+
+    var hide = function() {
+        var hi = e('#hide')
+        hi.addEventListener('click', function() {
+            log("?")
+            toggleClass(add_in, "show")
+        })
+    }
+
+    var bindEventDelete = () => {
+        var container = e('.timeline')
+        container.addEventListener('click', function(event) {
+            var self = event.target
+            if (self.classList.contains('del')) {
+                var self = event.target
+                var todoCell = self.closest('li')
+                    // 拿到 todo_id
+                    // 在事件中调用删除函数, 获取 todo_id 并且传给删除函数
+                    // 用 ajax 发送给服务器
+                var father = self.closest('.flag-wrapper')
+                var todoId = father.dataset.id
+                log('button click, delete', todoId)
+                apiTodoDelete(todoId, function(todo) {
+                    log('删除成功', todo)
+                        // 删除后, 删除页面元素
+                    todoCell.remove()
+                })
+            }
+        })
+    }
+
+    var bindEventComplete = () => {
+        var container = e('.timeline')
+        container.addEventListener('click', function(event) {
+            var self = event.target
+            if (self.classList.contains('com')) {
+                log('button click, complete')
+                var self = event.target
+                var todoCell = self.closest('.flag-wrapper')
+                var task = todoCell.querySelector('.flag')
+                task.classList.add('comp')
+            }
+        })
+    }
+
+    var bindEventEdit = () => {
+        // 绑定 edit 按钮的事件委托
+        var container = e('.timeline')
+        container.addEventListener('click', function(event) {
+            var self = event.target
+            if (self.classList.contains('pen')) {
+                log('button click, edit')
+                    // 找到 todo-task, 设置 contenteditable 属性, 并且让它获得焦点
+                var self = event.target
+                var todoCell = self.closest('.flag-wrapper')
+                var task = todoCell.querySelector('.flag')
+                task.contentEditable = true
+                task.focus()
+            }
+        })
+    }
+
+    var bindEventUpdate = () => {
+        var container = e('.timeline')
+            // 绑定 keydown 事件, 当用户按键的时候被触发
+        container.addEventListener('keydown', function(event) {
+            var self = event.target
+            if (self.classList.contains('flag')) {
+                if (event.key == 'Enter') {
+                    log('按了回车键', event)
+                        // 取消事件的默认行为, 回车键在编辑标签内容的时候会默认断行
+                    event.preventDefault()
+                        // 取消 editable 状态, 发送 update 的请求
+                    self.contentEditable = false
+                    var todoCell = self.closest('.flag-wrapper')
+                    var todoId = todoCell.dataset.id
+                        // var url = 'https://vip.cocode.cc/sandbox/todo/3400711034/update/' + todoId
+                    log(self.innerHTML)
+                    var data = {
+                        task: self.innerHTML,
+                    }
+                    apiTodoUpdate(todoId, data.task, function(todo) {
+                        log('更新成功')
+                    })
+                }
+            }
+        })
+    }
+
+    var __main = function() {
+        changeSkin()
+        hide()
+        add_click()
+        apiTodoAll(function(data) {
+            log(data)
+            insertTodos(data)
+        })
+        getSkin()
+        InsertDate()
+        bindEventDelete()
+        bindEventComplete()
+        bindEventEdit()
+        bindEventUpdate()
+    }
+
+    __main()
+    </script>
+</body>
+
+</html>
